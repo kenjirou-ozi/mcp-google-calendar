@@ -24,21 +24,36 @@ app.use((req, res, next) => {
 
 // Google Calendar API設定
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
-const CREDENTIALS_PATH = path.join(__dirname, 'google-credentials.json');
 
-// Google認証
+// Google認証（環境変数から読み込み）
 async function authorize() {
-  const credentials = require(CREDENTIALS_PATH);
-  const { client_email, private_key } = credentials;
-  
-  const auth = new google.auth.JWT(
-    client_email,
-    null,
-    private_key,
-    SCOPES
-  );
-  
-  return auth;
+  try {
+    // 環境変数からGoogle認証情報を取得
+    const credentialsJson = process.env.GOOGLE_CREDENTIALS || process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+    
+    if (!credentialsJson) {
+      throw new Error('Google認証情報が環境変数に設定されていません');
+    }
+    
+    const credentials = JSON.parse(credentialsJson);
+    const { client_email, private_key } = credentials;
+    
+    if (!client_email || !private_key) {
+      throw new Error('Google認証情報に必要なフィールドがありません');
+    }
+    
+    const auth = new google.auth.JWT(
+      client_email,
+      null,
+      private_key,
+      SCOPES
+    );
+    
+    return auth;
+  } catch (error) {
+    console.error('Google認証エラー:', error);
+    throw error;
+  }
 }
 
 // カレンダー予定追加エンドポイント
