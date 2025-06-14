@@ -57,11 +57,10 @@ async function authorize() {
 }
 
 // カレンダー予定追加エンドポイント
-// カレンダー予定追加エンドポイント
 app.post('/add-event', async (req, res) => {
   try {
     const { title, startDateTime, endDateTime, description = '', calendarId = '404.iwana@i.softbank.jp' } = req.body;
-
+    
     // 入力検証
     if (!title || !startDateTime || !endDateTime) {
       return res.status(400).json({
